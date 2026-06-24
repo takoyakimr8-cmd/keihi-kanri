@@ -231,6 +231,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
     <div id="entries-list"></div>
   </div>
   <button class="btn btn-export" onclick="exportCSV()">📥 CSVダウンロード</button>
+  <button class="btn btn-export" onclick="window.print()" style="margin-top:8px;">🖨️ 印刷する</button>
 </div>
 
 <script>
@@ -296,11 +297,11 @@ function showYabeMonthly() {
   const d = new Date();
   document.getElementById('yabe-month').value = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
   document.getElementById('yabe-count').value = '';
-  document.getElementById('yabe-calc').textContent = '209円 × 0回 = 0円';
+  document.getElementById('yabe-calc').textContent = '1,130円 × 0回 = 0円';
   document.getElementById('yabe-monthly').style.display = 'block';
   document.getElementById('yabe-count').oninput = function() {
     const n = parseInt(this.value) || 0;
-    document.getElementById('yabe-calc').textContent = '209円 × ' + n + '回 = ' + (209*n).toLocaleString() + '円';
+    document.getElementById('yabe-calc').textContent = '1,130円 × ' + n + '回 = ' + (1130*n).toLocaleString() + '円';
   };
 }
 
@@ -313,7 +314,7 @@ function saveYabeMonthly() {
   entries.push({
     type: 'expense',
     date: date,
-    amount: 209 * count,
+    amount: 1130 * count,
     category: '交通費',
     note: '矢部駅 レッスン準備 ' + count + '回分',
     id: Date.now()
@@ -468,9 +469,17 @@ function renderSummary() {
       </div>
       <div class="item-right">
         <div class="amount ${e.type}">${e.type === 'income' ? '+' : '-'}¥${e.amount.toLocaleString()}</div>
+        <button onclick="deleteEntry(${e.id})" style="background:none; border:none; color:#c0392b; font-size:12px; cursor:pointer; margin-top:4px;">🗑️ 削除</button>
       </div>
     </div>
   `).join('');
+}
+
+function deleteEntry(id) {
+  if (!confirm('この記録を削除しますか？')) return;
+  entries = entries.filter(e => e.id !== id);
+  save();
+  renderSummary();
 }
 
 function exportCSV() {
