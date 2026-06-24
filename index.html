@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>経費管理ツール</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+.header { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 1rem; text-align: center; }
+.header h1 { font-size: 18px; font-weight: 600; }
+.tabs { display: flex; background: #fff; border-bottom: 1px solid #e0e0e0; }
+.tab { flex: 1; padding: 12px 8px; text-align: center; font-size: 13px; cursor: pointer; border: none; background: transparent; color: #888; }
+.tab.active { color: #1a1a1a; border-bottom: 2px solid #1a1a1a; font-weight: 600; }
+.section { display: none; padding: 1rem; }
+.section.active { display: block; }
+.card { background: #fff; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; border: 1px solid #e8e8e8; }
+.field { margin-bottom: 14px; }
+.field label { font-size: 12px; color: #888; display: block; margin-bottom: 6px; }
+.field input, .field select, .field textarea { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 15px; background: #fafafa; }
+.field textarea { height: 70px; resize: none; }
+.upload-area { border: 2px dashed #ccc; border-radius: 12px; padding: 2rem 1rem; text-align: center; cursor: pointer; background: #fafafa; }
+.upload-area p { font-size: 14px; color: #888; margin-top: 8px; }
+.btn { width: 100%; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; margin-top: 4px; }
+.btn-primary { background: #1a1a1a; color: #fff; }
+.btn-primary:active { opacity: 0.8; }
+.ai-result { background: #f8f8f8; border-radius: 10px; padding: 1rem; margin-top: 1rem; display: none; }
+.ai-result.show { display: block; }
+.loading { color: #888; font-size: 14px; text-align: center; padding: 1rem 0; }
+.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+.metric { background: #fff; border-radius: 12px; padding: 1rem; border: 1px solid #e8e8e8; }
+.metric .label { font-size: 11px; color: #888; }
+.metric .value { font-size: 20px; font-weight: 700; margin-top: 4px; }
+.metric .value.income { color: #0a7c5c; }
+.metric .value.expense { color: #c0392b; }
+.metric .value.profit { color: #1a1a1a; }
+.list-item { padding: 12px 0; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: flex-start; }
+.list-item:last-child { border-bottom: none; }
+.item-left .category { font-size: 13px; font-weight: 600; }
+.item-left .note { font-size: 12px; color: #888; margin-top: 2px; }
+.item-left .date { font-size: 11px; color: #bbb; margin-top: 2px; }
+.item-right .amount { font-size: 15px; font-weight: 700; }
+.item-right .amount.income { color: #0a7c5c; }
+.item-right .amount.expense { color: #c0392b; }
+.badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 99px; margin-bottom: 4px; }
+.badge-expense { background: #fde8e8; color: #c0392b; }
+.badge-income { background: #e0f4ee; color: #0a7c5c; }
+#img-preview { width: 100%; border-radius: 10px; margin-top: 10px; display: none; }
+.month-selector { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.month-selector button { background: #f0f0f0; border: none; border-radius: 8px; padding: 6px 14px; font-size: 14px; cursor: pointer; }
+.month-selector span { font-size: 15px; font-weight: 600; }
+.empty { text-align: center; color: #bbb; font-size: 14px; padding: 2rem 0; }
+.btn-export { background: #f0f0f0; color: #1a1a1a; margin-top: 8px; }
+.success-msg { background: #e0f4ee; color: #0a7c5c; border-radius: 8px; padding: 10px; text-align: center; font-size: 14px; margin-top: 8px; display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 経費管理</h1>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('receipt')">📷 レシート</button>
+  <button class="tab" onclick="switchTab('income')">💰 収入</button>
+  <button class="tab" onclick="switchTab('summary')">📈 集計</button>
+</div>
+
+<div id="receipt" class="section active">
+  <div class="card">
+    <div class="upload-area" onclick="document.getElementById('file-input').click()">
+      <div style="font-size:40px">📸</div>
+      <p>レシートの写真をタップ</p>
+      <p style="font-size:12px; margin-top:4px;">AIが自動で読み取ります</p>
+    </div>
+    <input type="file" id="file-input" accept="image/*" capture="environment" style="display:none" onchange="handleImage(event)">
+    <img id="img-preview" alt="レシートプレビュー">
+    
+    <div class="ai-result" id="ai-result">
+      <div class="loading" id="ai-loading">🤖 AIが読み取り中...</div>
+      <div id="ai-data" style="display:none">
+        <div class="field">
+          <label>日付</label>
+          <input type="date" id="r-date">
+        </div>
+        <div class="field">
+          <label>金額（円）</label>
+          <input type="number" id="r-amount" placeholder="例: 1200">
+        </div>
+        <div class="field">
+          <label>種別</label>
+          <select id="r-category">
+            <option>カフェ・食事代</option>
+            <option>交通費</option>
+            <option>接待交際費</option>
+            <option>通信費</option>
+            <option>教材費</option>
+            <option>お土産・プレゼント</option>
+            <option>その他</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>誰と / 何のため</label>
+          <input type="text" id="r-note" placeholder="例: Aさんとレッスン60分">
+        </div>
+        <button class="btn btn-primary" onclick="saveExpense()">保存する</button>
+        <div class="success-msg" id="expense-success">✅ 保存しました！</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="income" class="section">
+  <div class="card">
+    <div class="field">
+      <label>日付</label>
+      <input type="date" id="i-date">
+    </div>
+    <div class="field">
+      <label>収入源</label>
+      <select id="i-source">
+        <option>Stripe（レッスン・ツアー）</option>
+        <option>銀行振込（営業）</option>
+        <option>現金（現地レッスン）</option>
+        <option>その他</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>金額（円）</label>
+      <input type="number" id="i-amount" placeholder="例: 200000">
+    </div>
+    <div class="field">
+      <label>メモ</label>
+      <input type="text" id="i-note" placeholder="例: 6月分Stripe振込">
+    </div>
+    <button class="btn btn-primary" onclick="saveIncome()">保存する</button>
+    <div class="success-msg" id="income-success">✅ 保存しました！</div>
+  </div>
+</div>
+
+<div id="summary" class="section">
+  <div class="month-selector">
+    <button onclick="changeMonth(-1)">◀</button>
+    <span id="month-label"></span>
+    <button onclick="changeMonth(1)">▶</button>
+  </div>
+  <div class="summary-grid">
+    <div class="metric" style="grid-column: 1/-1">
+      <div class="label">利益（収入 − 経費）</div>
+      <div class="value profit" id="total-profit">¥0</div>
+    </div>
+    <div class="metric">
+      <div class="label">収入</div>
+      <div class="value income" id="total-income">¥0</div>
+    </div>
+    <div class="metric">
+      <div class="label">経費</div>
+      <div class="value expense" id="total-expense">¥0</div>
+    </div>
+  </div>
+  <div class="card">
+    <div id="entries-list"></div>
+  </div>
+  <button class="btn btn-export" onclick="exportCSV()">📥 CSVダウンロード</button>
+</div>
+
+<script>
+let entries = JSON.parse(localStorage.getItem('keihiEntries') || '[]');
+let currentMonth = new Date();
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById(tab).classList.add('active');
+  if (tab === 'summary') renderSummary();
+}
+
+async function handleImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const preview = document.getElementById('img-preview');
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = 'block';
+  const result = document.getElementById('ai-result');
+  result.classList.add('show');
+  document.getElementById('ai-loading').style.display = 'block';
+  document.getElementById('ai-data').style.display = 'none';
+
+  const base64 = await new Promise(res => {
+    const reader = new FileReader();
+    reader.onload = () => res(reader.result.split(',')[1]);
+    reader.readAsDataURL(file);
+  });
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: file.type, data: base64 } },
+            { type: 'text', text: 'このレシートから日付、金額、店名を読み取ってください。JSON形式のみで返してください。例: {"date":"2026-06-24","amount":1200,"shop":"スターバックス"} 読み取れない場合はnullを入れてください。JSONのみ返してください。' }
+          ]
+        }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content[0].text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(text);
+    document.getElementById('r-date').value = parsed.date || today();
+    document.getElementById('r-amount').value = parsed.amount || '';
+    document.getElementById('r-note').value = parsed.shop ? parsed.shop + 'にて' : '';
+  } catch(err) {
+    document.getElementById('r-date').value = today();
+  }
+
+  document.getElementById('ai-loading').style.display = 'none';
+  document.getElementById('ai-data').style.display = 'block';
+}
+
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function saveExpense() {
+  const amount = parseInt(document.getElementById('r-amount').value);
+  if (!amount) { alert('金額を入力してください'); return; }
+  entries.push({
+    type: 'expense',
+    date: document.getElementById('r-date').value || today(),
+    amount: amount,
+    category: document.getElementById('r-category').value,
+    note: document.getElementById('r-note').value,
+    id: Date.now()
+  });
+  save();
+  document.getElementById('ai-result').classList.remove('show');
+  document.getElementById('img-preview').style.display = 'none';
+  document.getElementById('file-input').value = '';
+  document.getElementById('r-amount').value = '';
+  document.getElementById('r-note').value = '';
+  showSuccess('expense-success');
+}
+
+function saveIncome() {
+  const amount = parseInt(document.getElementById('i-amount').value);
+  if (!amount) { alert('金額を入力してください'); return; }
+  entries.push({
+    type: 'income',
+    date: document.getElementById('i-date').value || today(),
+    amount: amount,
+    category: document.getElementById('i-source').value,
+    note: document.getElementById('i-note').value,
+    id: Date.now()
+  });
+  save();
+  document.getElementById('i-amount').value = '';
+  document.getElementById('i-note').value = '';
+  showSuccess('income-success');
+}
+
+function save() {
+  localStorage.setItem('keihiEntries', JSON.stringify(entries));
+}
+
+function showSuccess(id) {
+  const el = document.getElementById(id);
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 2000);
+}
+
+function changeMonth(dir) {
+  currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + dir, 1);
+  renderSummary();
+}
+
+function renderSummary() {
+  const y = currentMonth.getFullYear();
+  const m = currentMonth.getMonth();
+  document.getElementById('month-label').textContent = y + '年' + (m+1) + '月';
+  
+  const filtered = entries.filter(e => {
+    if (!e.date) return false;
+    const d = new Date(e.date);
+    return d.getFullYear() === y && d.getMonth() === m;
+  });
+
+  const income = filtered.filter(e => e.type === 'income').reduce((s,e) => s+e.amount, 0);
+  const expense = filtered.filter(e => e.type === 'expense').reduce((s,e) => s+e.amount, 0);
+  
+  document.getElementById('total-income').textContent = '¥' + income.toLocaleString();
+  document.getElementById('total-expense').textContent = '¥' + expense.toLocaleString();
+  document.getElementById('total-profit').textContent = '¥' + (income - expense).toLocaleString();
+
+  const list = document.getElementById('entries-list');
+  const sorted = [...filtered].sort((a,b) => b.date.localeCompare(a.date));
+  
+  if (sorted.length === 0) {
+    list.innerHTML = '<div class="empty">記録がありません</div>';
+    return;
+  }
+  
+  list.innerHTML = sorted.map(e => `
+    <div class="list-item">
+      <div class="item-left">
+        <span class="badge ${e.type === 'income' ? 'badge-income' : 'badge-expense'}">${e.type === 'income' ? '収入' : '経費'}</span>
+        <div class="category">${e.category}</div>
+        ${e.note ? `<div class="note">${e.note}</div>` : ''}
+        <div class="date">${e.date}</div>
+      </div>
+      <div class="item-right">
+        <div class="amount ${e.type}">${e.type === 'income' ? '+' : '-'}¥${e.amount.toLocaleString()}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function exportCSV() {
+  const header = '日付,種別,金額,カテゴリ,メモ\n';
+  const rows = entries.map(e => `${e.date},${e.type === 'income' ? '収入' : '経費'},${e.amount},${e.category},${e.note || ''}`).join('\n');
+  const blob = new Blob(['\uFEFF' + header + rows], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '経費管理_' + currentMonth.getFullYear() + (currentMonth.getMonth()+1) + '.csv';
+  a.click();
+}
+
+document.getElementById('i-date').value = today();
+document.getElementById('r-date') && (document.getElementById('r-date').value = today());
+renderSummary();
+</script>
+</body>
+</html>
+
