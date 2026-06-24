@@ -76,8 +76,43 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
     <input type="file" id="file-input" accept="image/*" capture="environment" style="display:none" onchange="handleImage(event)">
     <img id="img-preview" alt="レシートプレビュー">
     
-    <div style="text-align:center; margin-top:12px;">
-      <button class="btn" style="background:#f0f0f0; color:#1a1a1a; padding:10px 20px; width:auto;" onclick="showManualInput()">✏️ 写真なしで手入力する</button>
+    <div style="margin-top:12px;">
+      <p style="font-size:12px; color:#888; margin-bottom:8px;">🚃 よく使う交通費（タップで入力）</p>
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+        <button class="btn" style="background:#e0f4e0; color:#0a7c5c; padding:8px 12px; width:auto; font-size:12px;" onclick="showYabeMonthly()">🗓️ 矢部 今月分まとめ</button>
+        <button class="btn" style="background:#e8f4fd; color:#1a6898; padding:8px 12px; width:auto; font-size:12px;" onclick="quickEntry(209,'矢部→町田 レッスン準備')">矢部→町田 ¥209</button>
+        <button class="btn" style="background:#e8f4fd; color:#1a6898; padding:8px 12px; width:auto; font-size:12px;" onclick="quickEntry(356,'本鵠沼→小田町 移動')">本鵠沼→小田 ¥356</button>
+        <button class="btn" style="background:#e8f4fd; color:#1a6898; padding:8px 12px; width:auto; font-size:12px;" onclick="quickEntry(356,'町田→本鵠沼 移動')">町田→本鵠沼 ¥356</button>
+        <button class="btn" style="background:#fde8e8; color:#c0392b; padding:8px 12px; width:auto; font-size:12px;" onclick="quickEntry(324,'小田→藤沢 営業')">小田→藤沢 ¥324</button>
+        <button class="btn" style="background:#fde8e8; color:#c0392b; padding:8px 12px; width:auto; font-size:12px;" onclick="quickEntry(902,'恵比寿→藤沢 営業')">恵比寿→藤沢 ¥902</button>
+        <button class="btn" style="background:#fde8e8; color:#c0392b; padding:8px 12px; width:auto; font-size:12px;" onclick="quickEntry(816,'藤沢→茅場町 営業')">藤沢→茅場町 ¥816</button>
+        <button class="btn" style="background:#fde8e8; color:#c0392b; padding:8px 12px; width:auto; font-size:12px;" onclick="quickEntry(649,'本鵠沼→新宿 営業')">本鵠沼→新宿 ¥649</button>
+        <button class="btn" style="background:#fde8e8; color:#c0392b; padding:8px 12px; width:auto; font-size:12px;" onclick="quickEntry(209,'茅場町→地恵比寿 営業')">茅場町→地恵比寿 ¥209</button>
+      </div>
+      <div id="yabe-monthly" style="display:none; background:#e0f4e0; border-radius:10px; padding:12px; margin-bottom:12px;">
+        <p style="font-size:13px; font-weight:600; margin-bottom:8px;">🗓️ 矢部 今月分まとめ入力</p>
+        <div class="field">
+          <label>対象月</label>
+          <input type="month" id="yabe-month" style="width:100%; padding:10px 12px; border:1px solid #e0e0e0; border-radius:8px; font-size:15px; background:#fafafa;">
+        </div>
+        <div class="field">
+          <label>今月何回行きましたか？</label>
+          <input type="number" id="yabe-count" placeholder="例: 12" style="width:100%; padding:10px 12px; border:1px solid #e0e0e0; border-radius:8px; font-size:15px; background:#fafafa;">
+        </div>
+        <p style="font-size:12px; color:#0a7c5c; margin-bottom:8px;" id="yabe-calc">209円 × 0回 = 0円</p>
+        <button class="btn btn-primary" onclick="saveYabeMonthly()">保存する</button>
+        <div class="success-msg" id="yabe-success">✅ 保存しました！</div>
+      </div>
+      <div id="quick-confirm" style="display:none; background:#f8f8f8; border-radius:10px; padding:12px; margin-bottom:12px;">
+        <p style="font-size:13px; margin-bottom:8px;">📅 日付を確認してください</p>
+        <input type="date" id="q-date" style="width:100%; padding:10px 12px; border:1px solid #e0e0e0; border-radius:8px; font-size:15px; background:#fafafa; margin-bottom:8px;">
+        <p style="font-size:12px; color:#888; margin-bottom:8px;" id="q-label"></p>
+        <button class="btn btn-primary" onclick="saveQuick()">保存する</button>
+        <div class="success-msg" id="quick-success">✅ 保存しました！</div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:4px;">
+      <button class="btn" style="background:#f0f0f0; color:#1a1a1a; padding:10px 20px; width:auto;" onclick="showManualInput()">✏️ その他を手入力する</button>
     </div>
     
     <div class="ai-result" id="manual-input" style="display:none;">
@@ -255,6 +290,63 @@ async function handleImage(e) {
 
   document.getElementById('ai-loading').style.display = 'none';
   document.getElementById('ai-data').style.display = 'block';
+}
+
+function showYabeMonthly() {
+  const d = new Date();
+  document.getElementById('yabe-month').value = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+  document.getElementById('yabe-count').value = '';
+  document.getElementById('yabe-calc').textContent = '209円 × 0回 = 0円';
+  document.getElementById('yabe-monthly').style.display = 'block';
+  document.getElementById('yabe-count').oninput = function() {
+    const n = parseInt(this.value) || 0;
+    document.getElementById('yabe-calc').textContent = '209円 × ' + n + '回 = ' + (209*n).toLocaleString() + '円';
+  };
+}
+
+function saveYabeMonthly() {
+  const count = parseInt(document.getElementById('yabe-count').value);
+  if (!count) { alert('回数を入力してください'); return; }
+  const month = document.getElementById('yabe-month').value;
+  const lastDay = new Date(month.split('-')[0], month.split('-')[1], 0).getDate();
+  const date = month + '-' + String(lastDay).padStart(2,'0');
+  entries.push({
+    type: 'expense',
+    date: date,
+    amount: 209 * count,
+    category: '交通費',
+    note: '矢部駅 レッスン準備 ' + count + '回分',
+    id: Date.now()
+  });
+  save();
+  document.getElementById('yabe-monthly').style.display = 'none';
+  document.getElementById('yabe-count').value = '';
+  showSuccess('yabe-success');
+}
+
+let quickAmount = 0;
+let quickNote = '';
+
+function quickEntry(amount, note) {
+  quickAmount = amount;
+  quickNote = note;
+  document.getElementById('q-date').value = today();
+  document.getElementById('q-label').textContent = note + ' ¥' + amount;
+  document.getElementById('quick-confirm').style.display = 'block';
+}
+
+function saveQuick() {
+  entries.push({
+    type: 'expense',
+    date: document.getElementById('q-date').value || today(),
+    amount: quickAmount,
+    category: '交通費',
+    note: quickNote,
+    id: Date.now()
+  });
+  save();
+  document.getElementById('quick-confirm').style.display = 'none';
+  showSuccess('quick-success');
 }
 
 function showManualInput() {
