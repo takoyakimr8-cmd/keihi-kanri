@@ -10,12 +10,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
 .header { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 1rem; text-align: center; }
 .header h1 { font-size: 18px; font-weight: 600; }
 .container { padding: 1rem; max-width: 500px; margin: 0 auto; }
-.big-btn { width: 100%; padding: 24px; border-radius: 16px; font-size: 20px; font-weight: 700; cursor: pointer; border: none; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-.btn-cafe { background: #fff3e0; color: #e65100; }
-.btn-train { background: #e3f2fd; color: #1565c0; }
-.btn-yabe { background: #e8f5e9; color: #2e7d32; }
-.btn-other { background: #f5f5f5; color: #555; border: 1px solid #ddd; }
-.btn-income { background: #e8f5e9; color: #1b5e20; }
+.section-label { font-size: 13px; font-weight: 700; color: #888; margin: 16px 0 8px 4px; }
+.big-btn { width: 100%; padding: 18px; border-radius: 14px; font-size: 17px; font-weight: 700; cursor: pointer; border: none; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .form-box { background: #fff; border-radius: 16px; padding: 1.2rem; margin-bottom: 12px; display: none; border: 2px solid #eee; }
 .form-box.show { display: block; }
 .form-box label { font-size: 13px; color: #888; display: block; margin-bottom: 6px; margin-top: 12px; }
@@ -45,30 +41,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
 
 <div class="container">
 
-  <!-- カフェボタン -->
-  <button class="big-btn btn-cafe" onclick="toggleForm('cafe')">☕ カフェ代</button>
-  <div class="form-box" id="form-cafe">
+  <div class="section-label">📖 レッスン</div>
+
+  <button class="big-btn" style="background:#fff3e0; color:#e65100;" onclick="toggleForm('l-food')">🍽️ 飲食代（レッスン）</button>
+  <div class="form-box" id="form-l-food">
     <label>金額（円）</label>
-    <input type="number" id="cafe-amount" placeholder="例: 1200" inputmode="numeric">
+    <input type="number" id="l-food-amount" placeholder="例: 1200" inputmode="numeric">
     <label>日付</label>
-    <input type="date" id="cafe-date">
-    <button class="save-btn" onclick="saveCafe()">保存</button>
+    <input type="date" id="l-food-date">
+    <label>メモ（任意）</label>
+    <input type="text" id="l-food-note" placeholder="例: Aさんとレッスン">
+    <button class="save-btn" onclick="saveEntry2('l-food','expense','飲食代（レッスン）')">保存</button>
   </div>
 
-  <!-- 営業ご飯ボタン -->
-  <button class="big-btn btn-cafe" style="background:#fce4ec; color:#ad1457;" onclick="toggleForm('meshi')">🍽️ 営業のご飯代</button>
-  <div class="form-box" id="form-meshi">
-    <label>金額（円）</label>
-    <input type="number" id="meshi-amount" placeholder="例: 3500" inputmode="numeric">
-    <label>日付</label>
-    <input type="date" id="meshi-date">
-    <label>誰と？</label>
-    <input type="text" id="meshi-note" placeholder="例: 〇〇社の田中さん">
-    <button class="save-btn" onclick="saveMeshi()">保存</button>
-  </div>
-
-  <!-- 矢部ボタン -->
-  <button class="big-btn btn-yabe" onclick="toggleForm('yabe')">🚃 矢部（今月まとめ）</button>
+  <button class="big-btn" style="background:#e8f5e9; color:#2e7d32;" onclick="toggleForm('yabe')">🚃 矢部交通費（今月まとめ）</button>
   <div class="form-box" id="form-yabe">
     <label>対象月</label>
     <input type="month" id="yabe-month">
@@ -78,29 +64,88 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
     <button class="save-btn" onclick="saveYabe()">保存</button>
   </div>
 
-  <!-- その他交通費 -->
-  <button class="big-btn btn-train" onclick="toggleForm('train')">🚉 その他の交通費</button>
-  <div class="form-box" id="form-train">
+  <button class="big-btn" style="background:#e3f2fd; color:#1565c0;" onclick="toggleForm('l-train')">🚉 交通費（レッスン）</button>
+  <div class="form-box" id="form-l-train">
     <label>金額（円）</label>
-    <input type="number" id="train-amount" placeholder="例: 2576" inputmode="numeric">
+    <input type="number" id="l-train-amount" placeholder="例: 500" inputmode="numeric">
     <label>日付</label>
-    <input type="date" id="train-date">
-    <label>メモ（どこへ？）</label>
-    <input type="text" id="train-note" placeholder="例: 営業">
-    <button class="save-btn" onclick="saveTrain()">保存</button>
+    <input type="date" id="l-train-date">
+    <label>メモ（任意）</label>
+    <input type="text" id="l-train-note" placeholder="例: 〇〇駅まで">
+    <button class="save-btn" onclick="saveEntry2('l-train','expense','交通費（レッスン）')">保存</button>
   </div>
 
-  <!-- 固定費ボタン -->
+  <div class="section-label">🗾 ツアー</div>
+
+  <button class="big-btn" style="background:#fff3e0; color:#bf360c;" onclick="toggleForm('t-food')">🍱 飲食代（ツアー）</button>
+  <div class="form-box" id="form-t-food">
+    <label>金額（円）</label>
+    <input type="number" id="t-food-amount" placeholder="例: 2000" inputmode="numeric">
+    <label>日付</label>
+    <input type="date" id="t-food-date">
+    <label>メモ（任意）</label>
+    <input type="text" id="t-food-note" placeholder="例: ツアー中の昼食">
+    <button class="save-btn" onclick="saveEntry2('t-food','expense','飲食代（ツアー）')">保存</button>
+  </div>
+
+  <button class="big-btn" style="background:#f3e5f5; color:#6a1b9a;" onclick="toggleForm('t-misc')">🎫 ツアー雑費（入場料など）</button>
+  <div class="form-box" id="form-t-misc">
+    <label>金額（円）</label>
+    <input type="number" id="t-misc-amount" placeholder="例: 1000" inputmode="numeric">
+    <label>日付</label>
+    <input type="date" id="t-misc-date">
+    <label>メモ（任意）</label>
+    <input type="text" id="t-misc-note" placeholder="例: 浅草寺 入場料">
+    <button class="save-btn" onclick="saveEntry2('t-misc','expense','ツアー雑費')">保存</button>
+  </div>
+
+  <button class="big-btn" style="background:#e3f2fd; color:#0d47a1;" onclick="toggleForm('t-train')">🚌 交通費（ツアー）</button>
+  <div class="form-box" id="form-t-train">
+    <label>金額（円）</label>
+    <input type="number" id="t-train-amount" placeholder="例: 800" inputmode="numeric">
+    <label>日付</label>
+    <input type="date" id="t-train-date">
+    <label>メモ（任意）</label>
+    <input type="text" id="t-train-note" placeholder="例: ツアー移動">
+    <button class="save-btn" onclick="saveEntry2('t-train','expense','交通費（ツアー）')">保存</button>
+  </div>
+
+  <div class="section-label">💼 営業</div>
+
+  <button class="big-btn" style="background:#fce4ec; color:#ad1457;" onclick="toggleForm('e-food')">🥂 飲食代（営業）</button>
+  <div class="form-box" id="form-e-food">
+    <label>金額（円）</label>
+    <input type="number" id="e-food-amount" placeholder="例: 3500" inputmode="numeric">
+    <label>日付</label>
+    <input type="date" id="e-food-date">
+    <label>誰と？</label>
+    <input type="text" id="e-food-note" placeholder="例: 〇〇社の田中さん">
+    <button class="save-btn" onclick="saveEntry2('e-food','expense','飲食代（営業）')">保存</button>
+  </div>
+
+  <button class="big-btn" style="background:#e3f2fd; color:#01579b;" onclick="toggleForm('e-train')">🚄 交通費（営業）</button>
+  <div class="form-box" id="form-e-train">
+    <label>金額（円）</label>
+    <input type="number" id="e-train-amount" placeholder="例: 2576" inputmode="numeric">
+    <label>日付</label>
+    <input type="date" id="e-train-date">
+    <label>メモ（任意）</label>
+    <input type="text" id="e-train-note" placeholder="例: 恵比寿の事務所へ">
+    <button class="save-btn" onclick="saveEntry2('e-train','expense','交通費（営業）')">保存</button>
+  </div>
+
+  <div class="section-label">🔧 共通</div>
+
   <button class="big-btn" style="background:#ede7f6; color:#4527a0;" onclick="toggleForm('kotei')">📱 固定費（Zoom・AI・ネット等）</button>
   <div class="form-box" id="form-kotei">
     <label>何の費用？</label>
     <select id="kotei-category">
-      <option data-amount="3000">Zoom（月額）</option>
-      <option data-amount="">Claude・AI（月額）</option>
-      <option data-amount="">Wi-Fi・ネット代</option>
-      <option data-amount="">スマホ代</option>
-      <option data-amount="">Stripe手数料</option>
-      <option data-amount="">振込手数料</option>
+      <option>Zoom（月額）</option>
+      <option>Claude・AI（月額）</option>
+      <option>Wi-Fi・ネット代</option>
+      <option>スマホ代</option>
+      <option>Stripe手数料</option>
+      <option>振込手数料</option>
     </select>
     <label>金額（円）</label>
     <input type="number" id="kotei-amount" placeholder="例: 3000" inputmode="numeric">
@@ -109,8 +154,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
     <button class="save-btn" onclick="saveKotei()">保存</button>
   </div>
 
-  <!-- その他 -->
-  <button class="big-btn btn-other" onclick="toggleForm('other')">📝 その他の経費</button>
+  <button class="big-btn" style="background:#f5f5f5; color:#555; border:1px solid #ddd;" onclick="toggleForm('other')">📝 その他の経費</button>
   <div class="form-box" id="form-other">
     <label>金額（円）</label>
     <input type="number" id="other-amount" placeholder="例: 3000" inputmode="numeric">
@@ -122,18 +166,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
       <option>パソコン・周辺機器</option>
       <option>文房具・印刷代</option>
       <option>お土産・プレゼント</option>
-      <option>ツアー入場料・下見</option>
       <option>広告費</option>
       <option>接待交際費</option>
       <option>その他</option>
     </select>
-    <label>メモ</label>
-    <input type="text" id="other-note" placeholder="例: Zoom月額">
+    <label>メモ（任意）</label>
+    <input type="text" id="other-note" placeholder="例: みんなの日本語">
     <button class="save-btn" onclick="saveOther()">保存</button>
   </div>
 
-  <!-- 収入 -->
-  <button class="big-btn btn-income" onclick="toggleForm('income')">💵 収入</button>
+  <button class="big-btn" style="background:#e8f5e9; color:#1b5e20;" onclick="toggleForm('income')">💵 収入</button>
   <div class="form-box" id="form-income">
     <label>金額（円）</label>
     <input type="number" id="income-amount" placeholder="例: 200000" inputmode="numeric">
@@ -141,11 +183,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
     <input type="date" id="income-date">
     <label>収入源</label>
     <select id="income-source">
-      <option>Stripe（レッスン・ツアー）</option>
+      <option>Stripe（レッスン）</option>
+      <option>Stripe（ツアー）</option>
       <option>銀行振込（営業）</option>
       <option>現金</option>
       <option>その他</option>
     </select>
+    <label>メモ（任意）</label>
+    <input type="text" id="income-note" placeholder="例: 6月分">
     <button class="save-btn" onclick="saveIncome()">保存</button>
   </div>
 
@@ -180,21 +225,19 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
 <script>
 let entries = JSON.parse(localStorage.getItem('keihiEntries') || '[]');
 let currentMonth = new Date();
+const forms = ['l-food','yabe','l-train','t-food','t-misc','t-train','e-food','e-train','kotei','other','income'];
 
 function today() { return new Date().toISOString().split('T')[0]; }
 
 function toggleForm(name) {
-  ['cafe','meshi','yabe','train','kotei','other','income'].forEach(n => {
+  forms.forEach(n => {
     const el = document.getElementById('form-' + n);
-    if (n === name) {
-      el.classList.toggle('show');
-    } else {
-      el.classList.remove('show');
-    }
+    if (!el) return;
+    if (n === name) el.classList.toggle('show');
+    else el.classList.remove('show');
   });
-  // 日付を今日に設定
-  const dateInputs = { cafe: 'cafe-date', meshi: 'meshi-date', train: 'train-date', kotei: 'kotei-date', other: 'other-date', income: 'income-date' };
-  if (dateInputs[name]) document.getElementById(dateInputs[name]).value = today();
+  const dateEl = document.getElementById(name + '-date');
+  if (dateEl) dateEl.value = today();
   if (name === 'yabe') {
     const d = new Date();
     document.getElementById('yabe-month').value = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
@@ -213,31 +256,14 @@ function addEntry(type, date, amount, category, note) {
   localStorage.setItem('keihiEntries', JSON.stringify(entries));
 }
 
-function saveCafe() {
-  const a = parseInt(document.getElementById('cafe-amount').value);
+function saveEntry2(prefix, type, category) {
+  const a = parseInt(document.getElementById(prefix + '-amount').value);
   if (!a) { alert('金額を入力してください'); return; }
-  addEntry('expense', document.getElementById('cafe-date').value || today(), a, 'カフェ・食事代', '生徒とレッスン');
-  document.getElementById('cafe-amount').value = '';
-  document.getElementById('form-cafe').classList.remove('show');
-  showSuccess();
-}
-
-function saveMeshi() {
-  const a = parseInt(document.getElementById('meshi-amount').value);
-  if (!a) { alert('金額を入力してください'); return; }
-  addEntry('expense', document.getElementById('meshi-date').value || today(), a, '接待交際費', '営業会食 ' + (document.getElementById('meshi-note').value || ''));
-  document.getElementById('meshi-amount').value = '';
-  document.getElementById('meshi-note').value = '';
-  document.getElementById('form-meshi').classList.remove('show');
-  showSuccess();
-}
-
-function saveKotei() {
-  const a = parseInt(document.getElementById('kotei-amount').value);
-  if (!a) { alert('金額を入力してください'); return; }
-  addEntry('expense', document.getElementById('kotei-date').value || today(), a, '通信費・手数料', document.getElementById('kotei-category').value);
-  document.getElementById('kotei-amount').value = '';
-  document.getElementById('form-kotei').classList.remove('show');
+  const noteEl = document.getElementById(prefix + '-note');
+  addEntry(type, document.getElementById(prefix + '-date').value || today(), a, category, noteEl ? noteEl.value : '');
+  document.getElementById(prefix + '-amount').value = '';
+  if (noteEl) noteEl.value = '';
+  document.getElementById('form-' + prefix).classList.remove('show');
   showSuccess();
 }
 
@@ -251,19 +277,18 @@ function saveYabe() {
   if (!c) { alert('回数を入力してください'); return; }
   const m = document.getElementById('yabe-month').value;
   const lastDay = new Date(m.split('-')[0], m.split('-')[1], 0).getDate();
-  addEntry('expense', m + '-' + String(lastDay).padStart(2,'0'), 1130*c, '交通費', '矢部駅 レッスン準備 ' + c + '回分');
+  addEntry('expense', m + '-' + String(lastDay).padStart(2,'0'), 1130*c, '交通費（レッスン）', '矢部駅 レッスン準備 ' + c + '回分');
   document.getElementById('yabe-count').value = '';
   document.getElementById('form-yabe').classList.remove('show');
   showSuccess();
 }
 
-function saveTrain() {
-  const a = parseInt(document.getElementById('train-amount').value);
+function saveKotei() {
+  const a = parseInt(document.getElementById('kotei-amount').value);
   if (!a) { alert('金額を入力してください'); return; }
-  addEntry('expense', document.getElementById('train-date').value || today(), a, '交通費', document.getElementById('train-note').value);
-  document.getElementById('train-amount').value = '';
-  document.getElementById('train-note').value = '';
-  document.getElementById('form-train').classList.remove('show');
+  addEntry('expense', document.getElementById('kotei-date').value || today(), a, '通信費・手数料', document.getElementById('kotei-category').value);
+  document.getElementById('kotei-amount').value = '';
+  document.getElementById('form-kotei').classList.remove('show');
   showSuccess();
 }
 
@@ -280,8 +305,9 @@ function saveOther() {
 function saveIncome() {
   const a = parseInt(document.getElementById('income-amount').value);
   if (!a) { alert('金額を入力してください'); return; }
-  addEntry('income', document.getElementById('income-date').value || today(), a, document.getElementById('income-source').value, '');
+  addEntry('income', document.getElementById('income-date').value || today(), a, document.getElementById('income-source').value, document.getElementById('income-note').value || '');
   document.getElementById('income-amount').value = '';
+  document.getElementById('income-note').value = '';
   document.getElementById('form-income').classList.remove('show');
   showSuccess();
 }
