@@ -3,429 +3,287 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>経費管理ツール</title>
+<title>経費管理</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif; background: #f5f5f5; color: #1a1a1a; padding-bottom: 30px; }
 .header { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 1rem; text-align: center; }
 .header h1 { font-size: 18px; font-weight: 600; }
-.tabs { display: flex; background: #fff; border-bottom: 1px solid #e0e0e0; }
-.tab { flex: 1; padding: 12px 8px; text-align: center; font-size: 13px; cursor: pointer; border: none; background: transparent; color: #888; }
-.tab.active { color: #1a1a1a; border-bottom: 2px solid #1a1a1a; font-weight: 600; }
-.section { display: none; padding: 1rem; }
-.section.active { display: block; }
-.card { background: #fff; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; border: 1px solid #e8e8e8; }
-.field { margin-bottom: 14px; }
-.field label { font-size: 12px; color: #888; display: block; margin-bottom: 6px; }
-.field input, .field select, .field textarea { width: 100%; padding: 10px 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 15px; background: #fafafa; }
-.field textarea { height: 70px; resize: none; }
-.upload-area { border: 2px dashed #ccc; border-radius: 12px; padding: 2rem 1rem; text-align: center; cursor: pointer; background: #fafafa; }
-.upload-area p { font-size: 14px; color: #888; margin-top: 8px; }
-.btn { width: 100%; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; margin-top: 4px; }
-.btn-primary { background: #1a1a1a; color: #fff; }
-.btn-primary:active { opacity: 0.8; }
-.ai-result { background: #f8f8f8; border-radius: 10px; padding: 1rem; margin-top: 1rem; display: none; }
-.ai-result.show { display: block; }
-.loading { color: #888; font-size: 14px; text-align: center; padding: 1rem 0; }
-.summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
-.metric { background: #fff; border-radius: 12px; padding: 1rem; border: 1px solid #e8e8e8; }
-.metric .label { font-size: 11px; color: #888; }
-.metric .value { font-size: 20px; font-weight: 700; margin-top: 4px; }
-.metric .value.income { color: #0a7c5c; }
-.metric .value.expense { color: #c0392b; }
-.metric .value.profit { color: #1a1a1a; }
-.list-item { padding: 12px 0; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: flex-start; }
+.container { padding: 1rem; max-width: 500px; margin: 0 auto; }
+.big-btn { width: 100%; padding: 24px; border-radius: 16px; font-size: 20px; font-weight: 700; cursor: pointer; border: none; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.btn-cafe { background: #fff3e0; color: #e65100; }
+.btn-train { background: #e3f2fd; color: #1565c0; }
+.btn-yabe { background: #e8f5e9; color: #2e7d32; }
+.btn-other { background: #f5f5f5; color: #555; border: 1px solid #ddd; }
+.btn-income { background: #e8f5e9; color: #1b5e20; }
+.form-box { background: #fff; border-radius: 16px; padding: 1.2rem; margin-bottom: 12px; display: none; border: 2px solid #eee; }
+.form-box.show { display: block; }
+.form-box label { font-size: 13px; color: #888; display: block; margin-bottom: 6px; margin-top: 12px; }
+.form-box input, .form-box select { width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 18px; background: #fafafa; }
+.save-btn { width: 100%; padding: 16px; border-radius: 12px; font-size: 17px; font-weight: 700; cursor: pointer; border: none; background: #1a1a1a; color: #fff; margin-top: 16px; }
+.summary-box { background: #fff; border-radius: 16px; padding: 1.2rem; margin-top: 20px; border: 1px solid #eee; }
+.month-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.month-nav button { background: #f0f0f0; border: none; border-radius: 8px; padding: 8px 16px; font-size: 16px; cursor: pointer; }
+.month-nav span { font-size: 16px; font-weight: 700; }
+.totals { display: flex; gap: 10px; margin-bottom: 12px; }
+.total-item { flex: 1; background: #fafafa; border-radius: 10px; padding: 12px; text-align: center; }
+.total-item .label { font-size: 11px; color: #888; }
+.total-item .val { font-size: 17px; font-weight: 700; margin-top: 4px; }
+.val.green { color: #2e7d32; }
+.val.red { color: #c62828; }
+.list-item { padding: 10px 0; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
 .list-item:last-child { border-bottom: none; }
-.item-left .category { font-size: 13px; font-weight: 600; }
-.item-left .note { font-size: 12px; color: #888; margin-top: 2px; }
-.item-left .date { font-size: 11px; color: #bbb; margin-top: 2px; }
-.item-right .amount { font-size: 15px; font-weight: 700; }
-.item-right .amount.income { color: #0a7c5c; }
-.item-right .amount.expense { color: #c0392b; }
-.badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 99px; margin-bottom: 4px; }
-.badge-expense { background: #fde8e8; color: #c0392b; }
-.badge-income { background: #e0f4ee; color: #0a7c5c; }
-#img-preview { width: 100%; border-radius: 10px; margin-top: 10px; display: none; }
-.month-selector { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-.month-selector button { background: #f0f0f0; border: none; border-radius: 8px; padding: 6px 14px; font-size: 14px; cursor: pointer; }
-.month-selector span { font-size: 15px; font-weight: 600; }
-.empty { text-align: center; color: #bbb; font-size: 14px; padding: 2rem 0; }
-.btn-export { background: #f0f0f0; color: #1a1a1a; margin-top: 8px; }
-.success-msg { background: #e0f4ee; color: #0a7c5c; border-radius: 8px; padding: 10px; text-align: center; font-size: 14px; margin-top: 8px; display: none; }
+.del-btn { background: none; border: none; color: #c62828; font-size: 13px; cursor: pointer; padding: 4px 8px; }
+.success { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #2e7d32; color: #fff; padding: 12px 24px; border-radius: 99px; font-size: 15px; font-weight: 600; display: none; z-index: 100; }
+.csv-btn { width: 100%; padding: 14px; border-radius: 12px; font-size: 15px; cursor: pointer; border: 1px solid #ddd; background: #fff; margin-top: 12px; }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <h1>📊 経費管理</h1>
-</div>
+<div class="header"><h1>💰 経費管理</h1></div>
+<div class="success" id="success">✅ 保存しました！</div>
 
-<div class="tabs">
-  <button class="tab active" onclick="switchTab('receipt')">📷 レシート</button>
-  <button class="tab" onclick="switchTab('income')">💰 収入</button>
-  <button class="tab" onclick="switchTab('summary')">📈 集計</button>
-</div>
+<div class="container">
 
-<div id="receipt" class="section active">
-  <div class="card">
-    <div class="upload-area" onclick="document.getElementById('file-input').click()">
-      <div style="font-size:40px">📸</div>
-      <p>レシートの写真をタップ</p>
-      <p style="font-size:12px; margin-top:4px;">AIが自動で読み取ります</p>
-    </div>
-    <input type="file" id="file-input" accept="image/*" capture="environment" style="display:none" onchange="handleImage(event)">
-    <img id="img-preview" alt="レシートプレビュー">
-    
-    <div style="margin-top:12px;">
-      <p style="font-size:12px; color:#888; margin-bottom:8px;">🚃 よく使う交通費（タップで入力）</p>
-      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
-        <button class="btn" style="background:#e0f4e0; color:#0a7c5c; padding:8px 12px; width:auto; font-size:12px;" onclick="showYabeMonthly()">🗓️ 矢部 今月分まとめ</button>
-        <button class="btn" style="background:#e8f4fd; color:#1a6898; padding:8px 12px; width:auto; font-size:12px;" onclick="quickEntry(209,'矢部→町田 レッスン準備')">矢部→町田 ¥209</button>
-        <button class="btn" style="background:#e8f4fd; color:#1a6898; padding:8px 12px; width:auto; font-size:12px;" onclick="quickEntry(356,'本鵠沼→小田町 移動')">本鵠沼→小田 ¥356</button>
-        <button class="btn" style="background:#e8f4fd; color:#1a6898; padding:8px 12px; width:auto; font-size:12px;" onclick="quickEntry(356,'町田→本鵠沼 移動')">町田→本鵠沼 ¥356</button>
-        <button class="btn" style="background:#fde8e8; color:#c0392b; padding:8px 12px; width:auto; font-size:12px;" onclick="quickEntry(324,'小田→藤沢 営業')">小田→藤沢 ¥324</button>
-        <button class="btn" style="background:#fde8e8; color:#c0392b; padding:8px 12px; width:auto; font-size:12px;" onclick="quickEntry(902,'恵比寿→藤沢 営業')">恵比寿→藤沢 ¥902</button>
-        <button class="btn" style="background:#fde8e8; color:#c0392b; padding:8px 12px; width:auto; font-size:12px;" onclick="quickEntry(816,'藤沢→茅場町 営業')">藤沢→茅場町 ¥816</button>
-        <button class="btn" style="background:#fde8e8; color:#c0392b; padding:8px 12px; width:auto; font-size:12px;" onclick="quickEntry(649,'本鵠沼→新宿 営業')">本鵠沼→新宿 ¥649</button>
-        <button class="btn" style="background:#fde8e8; color:#c0392b; padding:8px 12px; width:auto; font-size:12px;" onclick="quickEntry(209,'茅場町→地恵比寿 営業')">茅場町→地恵比寿 ¥209</button>
-      </div>
-      <div id="yabe-monthly" style="display:none; background:#e0f4e0; border-radius:10px; padding:12px; margin-bottom:12px;">
-        <p style="font-size:13px; font-weight:600; margin-bottom:8px;">🗓️ 矢部 今月分まとめ入力</p>
-        <div class="field">
-          <label>対象月</label>
-          <input type="month" id="yabe-month" style="width:100%; padding:10px 12px; border:1px solid #e0e0e0; border-radius:8px; font-size:15px; background:#fafafa;">
-        </div>
-        <div class="field">
-          <label>今月何回行きましたか？</label>
-          <input type="number" id="yabe-count" placeholder="例: 12" style="width:100%; padding:10px 12px; border:1px solid #e0e0e0; border-radius:8px; font-size:15px; background:#fafafa;">
-        </div>
-        <p style="font-size:12px; color:#0a7c5c; margin-bottom:8px;" id="yabe-calc">209円 × 0回 = 0円</p>
-        <button class="btn btn-primary" onclick="saveYabeMonthly()">保存する</button>
-        <div class="success-msg" id="yabe-success">✅ 保存しました！</div>
-      </div>
-      <div id="quick-confirm" style="display:none; background:#f8f8f8; border-radius:10px; padding:12px; margin-bottom:12px;">
-        <p style="font-size:13px; margin-bottom:8px;">📅 日付を確認してください</p>
-        <input type="date" id="q-date" style="width:100%; padding:10px 12px; border:1px solid #e0e0e0; border-radius:8px; font-size:15px; background:#fafafa; margin-bottom:8px;">
-        <p style="font-size:12px; color:#888; margin-bottom:8px;" id="q-label"></p>
-        <button class="btn btn-primary" onclick="saveQuick()">保存する</button>
-        <div class="success-msg" id="quick-success">✅ 保存しました！</div>
-      </div>
-    </div>
-    <div style="text-align:center; margin-top:4px;">
-      <button class="btn" style="background:#f0f0f0; color:#1a1a1a; padding:10px 20px; width:auto;" onclick="showManualInput()">✏️ その他を手入力する</button>
-    </div>
-    
-    <div class="ai-result" id="manual-input" style="display:none;">
-      <p style="font-size:13px; color:#888; margin-bottom:12px;">手入力フォーム</p>
-      <div class="field">
-        <label>日付</label>
-        <input type="date" id="m-date">
-      </div>
-      <div class="field">
-        <label>金額（円）</label>
-        <input type="number" id="m-amount" placeholder="例: 1200">
-      </div>
-      <div class="field">
-        <label>種別</label>
-        <select id="m-category">
-          <option>カフェ・食事代</option>
-          <option>交通費</option>
-          <option>接待交際費</option>
-          <option>通信費</option>
-          <option>教材費</option>
-          <option>お土産・プレゼント</option>
-          <option>その他</option>
-        </select>
-      </div>
-      <div class="field">
-        <label>誰と / 何のため</label>
-        <input type="text" id="m-note" placeholder="例: Aさんとレッスン60分">
-      </div>
-      <button class="btn btn-primary" onclick="saveManual()">保存する</button>
-      <div class="success-msg" id="manual-success">✅ 保存しました！</div>
-    </div>
-    
-    <div class="ai-result" id="ai-result">
-      <div class="loading" id="ai-loading">🤖 AIが読み取り中...</div>
-      <div id="ai-data" style="display:none">
-        <div class="field">
-          <label>日付</label>
-          <input type="date" id="r-date">
-        </div>
-        <div class="field">
-          <label>金額（円）</label>
-          <input type="number" id="r-amount" placeholder="例: 1200">
-        </div>
-        <div class="field">
-          <label>種別</label>
-          <select id="r-category">
-            <option>カフェ・食事代</option>
-            <option>交通費</option>
-            <option>接待交際費</option>
-            <option>通信費</option>
-            <option>教材費</option>
-            <option>お土産・プレゼント</option>
-            <option>その他</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>誰と / 何のため</label>
-          <input type="text" id="r-note" placeholder="例: Aさんとレッスン60分">
-        </div>
-        <button class="btn btn-primary" onclick="saveExpense()">保存する</button>
-        <div class="success-msg" id="expense-success">✅ 保存しました！</div>
-      </div>
-    </div>
+  <!-- カフェボタン -->
+  <button class="big-btn btn-cafe" onclick="toggleForm('cafe')">☕ カフェ代</button>
+  <div class="form-box" id="form-cafe">
+    <label>金額（円）</label>
+    <input type="number" id="cafe-amount" placeholder="例: 1200" inputmode="numeric">
+    <label>日付</label>
+    <input type="date" id="cafe-date">
+    <button class="save-btn" onclick="saveCafe()">保存</button>
   </div>
-</div>
 
-<div id="income" class="section">
-  <div class="card">
-    <div class="field">
-      <label>日付</label>
-      <input type="date" id="i-date">
-    </div>
-    <div class="field">
-      <label>収入源</label>
-      <select id="i-source">
-        <option>Stripe（レッスン・ツアー）</option>
-        <option>銀行振込（営業）</option>
-        <option>現金（現地レッスン）</option>
-        <option>その他</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>金額（円）</label>
-      <input type="number" id="i-amount" placeholder="例: 200000">
-    </div>
-    <div class="field">
-      <label>メモ</label>
-      <input type="text" id="i-note" placeholder="例: 6月分Stripe振込">
-    </div>
-    <button class="btn btn-primary" onclick="saveIncome()">保存する</button>
-    <div class="success-msg" id="income-success">✅ 保存しました！</div>
+  <!-- 営業ご飯ボタン -->
+  <button class="big-btn btn-cafe" style="background:#fce4ec; color:#ad1457;" onclick="toggleForm('meshi')">🍽️ 営業のご飯代</button>
+  <div class="form-box" id="form-meshi">
+    <label>金額（円）</label>
+    <input type="number" id="meshi-amount" placeholder="例: 3500" inputmode="numeric">
+    <label>日付</label>
+    <input type="date" id="meshi-date">
+    <label>誰と？</label>
+    <input type="text" id="meshi-note" placeholder="例: 〇〇社の田中さん">
+    <button class="save-btn" onclick="saveMeshi()">保存</button>
   </div>
-</div>
 
-<div id="summary" class="section">
-  <div class="month-selector">
-    <button onclick="changeMonth(-1)">◀</button>
-    <span id="month-label"></span>
-    <button onclick="changeMonth(1)">▶</button>
+  <!-- 矢部ボタン -->
+  <button class="big-btn btn-yabe" onclick="toggleForm('yabe')">🚃 矢部（今月まとめ）</button>
+  <div class="form-box" id="form-yabe">
+    <label>対象月</label>
+    <input type="month" id="yabe-month">
+    <label>行った回数</label>
+    <input type="number" id="yabe-count" placeholder="例: 12" inputmode="numeric" oninput="updateYabeCalc()">
+    <p style="margin-top:10px; font-size:15px; color:#2e7d32; font-weight:600;" id="yabe-calc">1,130円 × 0回 = 0円</p>
+    <button class="save-btn" onclick="saveYabe()">保存</button>
   </div>
-  <div class="summary-grid">
-    <div class="metric" style="grid-column: 1/-1">
-      <div class="label">利益（収入 − 経費）</div>
-      <div class="value profit" id="total-profit">¥0</div>
-    </div>
-    <div class="metric">
-      <div class="label">収入</div>
-      <div class="value income" id="total-income">¥0</div>
-    </div>
-    <div class="metric">
-      <div class="label">経費</div>
-      <div class="value expense" id="total-expense">¥0</div>
-    </div>
+
+  <!-- その他交通費 -->
+  <button class="big-btn btn-train" onclick="toggleForm('train')">🚉 その他の交通費</button>
+  <div class="form-box" id="form-train">
+    <label>金額（円）</label>
+    <input type="number" id="train-amount" placeholder="例: 2576" inputmode="numeric">
+    <label>日付</label>
+    <input type="date" id="train-date">
+    <label>メモ（どこへ？）</label>
+    <input type="text" id="train-note" placeholder="例: 営業">
+    <button class="save-btn" onclick="saveTrain()">保存</button>
   </div>
-  <div class="card">
-    <div id="entries-list"></div>
+
+  <!-- 固定費ボタン -->
+  <button class="big-btn" style="background:#ede7f6; color:#4527a0;" onclick="toggleForm('kotei')">📱 固定費（Zoom・AI・ネット等）</button>
+  <div class="form-box" id="form-kotei">
+    <label>何の費用？</label>
+    <select id="kotei-category">
+      <option data-amount="3000">Zoom（月額）</option>
+      <option data-amount="">Claude・AI（月額）</option>
+      <option data-amount="">Wi-Fi・ネット代</option>
+      <option data-amount="">スマホ代</option>
+      <option data-amount="">Stripe手数料</option>
+      <option data-amount="">振込手数料</option>
+    </select>
+    <label>金額（円）</label>
+    <input type="number" id="kotei-amount" placeholder="例: 3000" inputmode="numeric">
+    <label>日付</label>
+    <input type="date" id="kotei-date">
+    <button class="save-btn" onclick="saveKotei()">保存</button>
   </div>
-  <button class="btn btn-export" onclick="exportCSV()">📥 CSVダウンロード</button>
-  <button class="btn btn-export" onclick="window.print()" style="margin-top:8px;">🖨️ 印刷する</button>
+
+  <!-- その他 -->
+  <button class="big-btn btn-other" onclick="toggleForm('other')">📝 その他の経費</button>
+  <div class="form-box" id="form-other">
+    <label>金額（円）</label>
+    <input type="number" id="other-amount" placeholder="例: 3000" inputmode="numeric">
+    <label>日付</label>
+    <input type="date" id="other-date">
+    <label>何の経費？</label>
+    <select id="other-category">
+      <option>教材・参考書</option>
+      <option>パソコン・周辺機器</option>
+      <option>文房具・印刷代</option>
+      <option>お土産・プレゼント</option>
+      <option>ツアー入場料・下見</option>
+      <option>広告費</option>
+      <option>接待交際費</option>
+      <option>その他</option>
+    </select>
+    <label>メモ</label>
+    <input type="text" id="other-note" placeholder="例: Zoom月額">
+    <button class="save-btn" onclick="saveOther()">保存</button>
+  </div>
+
+  <!-- 収入 -->
+  <button class="big-btn btn-income" onclick="toggleForm('income')">💵 収入</button>
+  <div class="form-box" id="form-income">
+    <label>金額（円）</label>
+    <input type="number" id="income-amount" placeholder="例: 200000" inputmode="numeric">
+    <label>日付</label>
+    <input type="date" id="income-date">
+    <label>収入源</label>
+    <select id="income-source">
+      <option>Stripe（レッスン・ツアー）</option>
+      <option>銀行振込（営業）</option>
+      <option>現金</option>
+      <option>その他</option>
+    </select>
+    <button class="save-btn" onclick="saveIncome()">保存</button>
+  </div>
+
+  <!-- 集計 -->
+  <div class="summary-box">
+    <div class="month-nav">
+      <button onclick="changeMonth(-1)">◀</button>
+      <span id="month-label"></span>
+      <button onclick="changeMonth(1)">▶</button>
+    </div>
+    <div class="totals">
+      <div class="total-item">
+        <div class="label">収入</div>
+        <div class="val green" id="t-income">¥0</div>
+      </div>
+      <div class="total-item">
+        <div class="label">経費</div>
+        <div class="val red" id="t-expense">¥0</div>
+      </div>
+      <div class="total-item">
+        <div class="label">利益</div>
+        <div class="val" id="t-profit">¥0</div>
+      </div>
+    </div>
+    <div id="entry-list"></div>
+    <button class="csv-btn" onclick="exportCSV()">📥 CSVダウンロード</button>
+    <button class="csv-btn" onclick="window.print()">🖨️ 印刷</button>
+  </div>
+
 </div>
 
 <script>
 let entries = JSON.parse(localStorage.getItem('keihiEntries') || '[]');
 let currentMonth = new Date();
 
-function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  event.currentTarget.classList.add('active');
-  document.getElementById(tab).classList.add('active');
-  if (tab === 'summary') renderSummary();
-}
+function today() { return new Date().toISOString().split('T')[0]; }
 
-async function handleImage(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const preview = document.getElementById('img-preview');
-  preview.src = URL.createObjectURL(file);
-  preview.style.display = 'block';
-  const result = document.getElementById('ai-result');
-  result.classList.add('show');
-  document.getElementById('ai-loading').style.display = 'block';
-  document.getElementById('ai-data').style.display = 'none';
-
-  const base64 = await new Promise(res => {
-    const reader = new FileReader();
-    reader.onload = () => res(reader.result.split(',')[1]);
-    reader.readAsDataURL(file);
+function toggleForm(name) {
+  ['cafe','meshi','yabe','train','kotei','other','income'].forEach(n => {
+    const el = document.getElementById('form-' + n);
+    if (n === name) {
+      el.classList.toggle('show');
+    } else {
+      el.classList.remove('show');
+    }
   });
-
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: file.type, data: base64 } },
-            { type: 'text', text: 'このレシートから日付、金額、店名を読み取ってください。JSON形式のみで返してください。例: {"date":"2026-06-24","amount":1200,"shop":"スターバックス"} 読み取れない場合はnullを入れてください。JSONのみ返してください。' }
-          ]
-        }]
-      })
-    });
-    const data = await resp.json();
-    const text = data.content[0].text.replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(text);
-    document.getElementById('r-date').value = parsed.date || today();
-    document.getElementById('r-amount').value = parsed.amount || '';
-    document.getElementById('r-note').value = parsed.shop ? parsed.shop + 'にて' : '';
-  } catch(err) {
-    document.getElementById('r-date').value = today();
-  }
-
-  document.getElementById('ai-loading').style.display = 'none';
-  document.getElementById('ai-data').style.display = 'block';
-}
-
-function showYabeMonthly() {
-  const d = new Date();
-  document.getElementById('yabe-month').value = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
-  document.getElementById('yabe-count').value = '';
-  document.getElementById('yabe-calc').textContent = '1,130円 × 0回 = 0円';
-  document.getElementById('yabe-monthly').style.display = 'block';
-  document.getElementById('yabe-count').oninput = function() {
-    const n = parseInt(this.value) || 0;
-    document.getElementById('yabe-calc').textContent = '1,130円 × ' + n + '回 = ' + (1130*n).toLocaleString() + '円';
-  };
-}
-
-function saveYabeMonthly() {
-  const count = parseInt(document.getElementById('yabe-count').value);
-  if (!count) { alert('回数を入力してください'); return; }
-  const month = document.getElementById('yabe-month').value;
-  const lastDay = new Date(month.split('-')[0], month.split('-')[1], 0).getDate();
-  const date = month + '-' + String(lastDay).padStart(2,'0');
-  entries.push({
-    type: 'expense',
-    date: date,
-    amount: 1130 * count,
-    category: '交通費',
-    note: '矢部駅 レッスン準備 ' + count + '回分',
-    id: Date.now()
-  });
-  save();
-  document.getElementById('yabe-monthly').style.display = 'none';
-  document.getElementById('yabe-count').value = '';
-  showSuccess('yabe-success');
-}
-
-let quickAmount = 0;
-let quickNote = '';
-
-function quickEntry(amount, note) {
-  quickAmount = amount;
-  quickNote = note;
-  document.getElementById('q-date').value = today();
-  document.getElementById('q-label').textContent = note + ' ¥' + amount;
-  document.getElementById('quick-confirm').style.display = 'block';
-}
-
-function saveQuick() {
-  entries.push({
-    type: 'expense',
-    date: document.getElementById('q-date').value || today(),
-    amount: quickAmount,
-    category: '交通費',
-    note: quickNote,
-    id: Date.now()
-  });
-  save();
-  document.getElementById('quick-confirm').style.display = 'none';
-  showSuccess('quick-success');
-}
-
-function showManualInput() {
-  const manual = document.getElementById('manual-input');
-  manual.style.display = manual.style.display === 'block' ? 'none' : 'block';
-  if (manual.style.display === 'block') {
-    document.getElementById('m-date').value = today();
+  // 日付を今日に設定
+  const dateInputs = { cafe: 'cafe-date', meshi: 'meshi-date', train: 'train-date', kotei: 'kotei-date', other: 'other-date', income: 'income-date' };
+  if (dateInputs[name]) document.getElementById(dateInputs[name]).value = today();
+  if (name === 'yabe') {
+    const d = new Date();
+    document.getElementById('yabe-month').value = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
   }
 }
 
-function saveManual() {
-  const amount = parseInt(document.getElementById('m-amount').value);
-  if (!amount) { alert('金額を入力してください'); return; }
-  entries.push({
-    type: 'expense',
-    date: document.getElementById('m-date').value || today(),
-    amount: amount,
-    category: document.getElementById('m-category').value,
-    note: document.getElementById('m-note').value,
-    id: Date.now()
-  });
-  save();
-  document.getElementById('m-amount').value = '';
-  document.getElementById('m-note').value = '';
-  document.getElementById('manual-input').style.display = 'none';
-  showSuccess('manual-success');
+function showSuccess() {
+  const el = document.getElementById('success');
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 1500);
+  renderSummary();
 }
 
-
-function today() {
-  return new Date().toISOString().split('T')[0];
-}
-
-function saveExpense() {
-  const amount = parseInt(document.getElementById('r-amount').value);
-  if (!amount) { alert('金額を入力してください'); return; }
-  entries.push({
-    type: 'expense',
-    date: document.getElementById('r-date').value || today(),
-    amount: amount,
-    category: document.getElementById('r-category').value,
-    note: document.getElementById('r-note').value,
-    id: Date.now()
-  });
-  save();
-  document.getElementById('ai-result').classList.remove('show');
-  document.getElementById('img-preview').style.display = 'none';
-  document.getElementById('file-input').value = '';
-  document.getElementById('r-amount').value = '';
-  document.getElementById('r-note').value = '';
-  showSuccess('expense-success');
-}
-
-function saveIncome() {
-  const amount = parseInt(document.getElementById('i-amount').value);
-  if (!amount) { alert('金額を入力してください'); return; }
-  entries.push({
-    type: 'income',
-    date: document.getElementById('i-date').value || today(),
-    amount: amount,
-    category: document.getElementById('i-source').value,
-    note: document.getElementById('i-note').value,
-    id: Date.now()
-  });
-  save();
-  document.getElementById('i-amount').value = '';
-  document.getElementById('i-note').value = '';
-  showSuccess('income-success');
-}
-
-function save() {
+function addEntry(type, date, amount, category, note) {
+  entries.push({ type, date, amount, category, note, id: Date.now() });
   localStorage.setItem('keihiEntries', JSON.stringify(entries));
 }
 
-function showSuccess(id) {
-  const el = document.getElementById(id);
-  el.style.display = 'block';
-  setTimeout(() => el.style.display = 'none', 2000);
+function saveCafe() {
+  const a = parseInt(document.getElementById('cafe-amount').value);
+  if (!a) { alert('金額を入力してください'); return; }
+  addEntry('expense', document.getElementById('cafe-date').value || today(), a, 'カフェ・食事代', '生徒とレッスン');
+  document.getElementById('cafe-amount').value = '';
+  document.getElementById('form-cafe').classList.remove('show');
+  showSuccess();
+}
+
+function saveMeshi() {
+  const a = parseInt(document.getElementById('meshi-amount').value);
+  if (!a) { alert('金額を入力してください'); return; }
+  addEntry('expense', document.getElementById('meshi-date').value || today(), a, '接待交際費', '営業会食 ' + (document.getElementById('meshi-note').value || ''));
+  document.getElementById('meshi-amount').value = '';
+  document.getElementById('meshi-note').value = '';
+  document.getElementById('form-meshi').classList.remove('show');
+  showSuccess();
+}
+
+function saveKotei() {
+  const a = parseInt(document.getElementById('kotei-amount').value);
+  if (!a) { alert('金額を入力してください'); return; }
+  addEntry('expense', document.getElementById('kotei-date').value || today(), a, '通信費・手数料', document.getElementById('kotei-category').value);
+  document.getElementById('kotei-amount').value = '';
+  document.getElementById('form-kotei').classList.remove('show');
+  showSuccess();
+}
+
+function updateYabeCalc() {
+  const n = parseInt(document.getElementById('yabe-count').value) || 0;
+  document.getElementById('yabe-calc').textContent = '1,130円 × ' + n + '回 = ' + (1130*n).toLocaleString() + '円';
+}
+
+function saveYabe() {
+  const c = parseInt(document.getElementById('yabe-count').value);
+  if (!c) { alert('回数を入力してください'); return; }
+  const m = document.getElementById('yabe-month').value;
+  const lastDay = new Date(m.split('-')[0], m.split('-')[1], 0).getDate();
+  addEntry('expense', m + '-' + String(lastDay).padStart(2,'0'), 1130*c, '交通費', '矢部駅 レッスン準備 ' + c + '回分');
+  document.getElementById('yabe-count').value = '';
+  document.getElementById('form-yabe').classList.remove('show');
+  showSuccess();
+}
+
+function saveTrain() {
+  const a = parseInt(document.getElementById('train-amount').value);
+  if (!a) { alert('金額を入力してください'); return; }
+  addEntry('expense', document.getElementById('train-date').value || today(), a, '交通費', document.getElementById('train-note').value);
+  document.getElementById('train-amount').value = '';
+  document.getElementById('train-note').value = '';
+  document.getElementById('form-train').classList.remove('show');
+  showSuccess();
+}
+
+function saveOther() {
+  const a = parseInt(document.getElementById('other-amount').value);
+  if (!a) { alert('金額を入力してください'); return; }
+  addEntry('expense', document.getElementById('other-date').value || today(), a, document.getElementById('other-category').value, document.getElementById('other-note').value);
+  document.getElementById('other-amount').value = '';
+  document.getElementById('other-note').value = '';
+  document.getElementById('form-other').classList.remove('show');
+  showSuccess();
+}
+
+function saveIncome() {
+  const a = parseInt(document.getElementById('income-amount').value);
+  if (!a) { alert('金額を入力してください'); return; }
+  addEntry('income', document.getElementById('income-date').value || today(), a, document.getElementById('income-source').value, '');
+  document.getElementById('income-amount').value = '';
+  document.getElementById('form-income').classList.remove('show');
+  showSuccess();
 }
 
 function changeMonth(dir) {
@@ -433,68 +291,52 @@ function changeMonth(dir) {
   renderSummary();
 }
 
+function deleteEntry(id) {
+  if (!confirm('削除しますか？')) return;
+  entries = entries.filter(e => e.id !== id);
+  localStorage.setItem('keihiEntries', JSON.stringify(entries));
+  renderSummary();
+}
+
 function renderSummary() {
   const y = currentMonth.getFullYear();
   const m = currentMonth.getMonth();
   document.getElementById('month-label').textContent = y + '年' + (m+1) + '月';
-  
   const filtered = entries.filter(e => {
     if (!e.date) return false;
     const d = new Date(e.date);
     return d.getFullYear() === y && d.getMonth() === m;
   });
-
-  const income = filtered.filter(e => e.type === 'income').reduce((s,e) => s+e.amount, 0);
-  const expense = filtered.filter(e => e.type === 'expense').reduce((s,e) => s+e.amount, 0);
+  const income = filtered.filter(e => e.type==='income').reduce((s,e)=>s+e.amount,0);
+  const expense = filtered.filter(e => e.type==='expense').reduce((s,e)=>s+e.amount,0);
+  document.getElementById('t-income').textContent = '¥' + income.toLocaleString();
+  document.getElementById('t-expense').textContent = '¥' + expense.toLocaleString();
+  document.getElementById('t-profit').textContent = '¥' + (income-expense).toLocaleString();
   
-  document.getElementById('total-income').textContent = '¥' + income.toLocaleString();
-  document.getElementById('total-expense').textContent = '¥' + expense.toLocaleString();
-  document.getElementById('total-profit').textContent = '¥' + (income - expense).toLocaleString();
-
-  const list = document.getElementById('entries-list');
   const sorted = [...filtered].sort((a,b) => b.date.localeCompare(a.date));
-  
-  if (sorted.length === 0) {
-    list.innerHTML = '<div class="empty">記録がありません</div>';
-    return;
-  }
-  
-  list.innerHTML = sorted.map(e => `
-    <div class="list-item">
-      <div class="item-left">
-        <span class="badge ${e.type === 'income' ? 'badge-income' : 'badge-expense'}">${e.type === 'income' ? '収入' : '経費'}</span>
-        <div class="category">${e.category}</div>
-        ${e.note ? `<div class="note">${e.note}</div>` : ''}
-        <div class="date">${e.date}</div>
+  document.getElementById('entry-list').innerHTML = sorted.length === 0 
+    ? '<p style="text-align:center; color:#bbb; padding:20px 0; font-size:14px;">記録がありません</p>'
+    : sorted.map(e => `
+      <div class="list-item">
+        <div>
+          <div style="font-weight:600;">${e.category} <span style="color:${e.type==='income'?'#2e7d32':'#c62828'};">${e.type==='income'?'+':'-'}¥${e.amount.toLocaleString()}</span></div>
+          <div style="font-size:12px; color:#999;">${e.date} ${e.note||''}</div>
+        </div>
+        <button class="del-btn" onclick="deleteEntry(${e.id})">削除</button>
       </div>
-      <div class="item-right">
-        <div class="amount ${e.type}">${e.type === 'income' ? '+' : '-'}¥${e.amount.toLocaleString()}</div>
-        <button onclick="deleteEntry(${e.id})" style="background:none; border:none; color:#c0392b; font-size:12px; cursor:pointer; margin-top:4px;">🗑️ 削除</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function deleteEntry(id) {
-  if (!confirm('この記録を削除しますか？')) return;
-  entries = entries.filter(e => e.id !== id);
-  save();
-  renderSummary();
+    `).join('');
 }
 
 function exportCSV() {
   const header = '日付,種別,金額,カテゴリ,メモ\n';
-  const rows = entries.map(e => `${e.date},${e.type === 'income' ? '収入' : '経費'},${e.amount},${e.category},${e.note || ''}`).join('\n');
+  const rows = entries.map(e => `${e.date},${e.type==='income'?'収入':'経費'},${e.amount},${e.category},${e.note||''}`).join('\n');
   const blob = new Blob(['\uFEFF' + header + rows], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
-  a.download = '経費管理_' + currentMonth.getFullYear() + (currentMonth.getMonth()+1) + '.csv';
+  a.href = URL.createObjectURL(blob);
+  a.download = '経費管理.csv';
   a.click();
 }
 
-document.getElementById('i-date').value = today();
-document.getElementById('r-date') && (document.getElementById('r-date').value = today());
 renderSummary();
 </script>
 </body>
