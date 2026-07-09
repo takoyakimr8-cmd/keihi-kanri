@@ -139,16 +139,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-ser
   <button class="big-btn" style="background:#ede7f6; color:#4527a0;" onclick="toggleForm('kotei')">📱 固定費（Zoom・AI・ネット等）</button>
   <div class="form-box" id="form-kotei">
     <label>何の費用？</label>
-    <select id="kotei-category">
-      <option>Zoom（月額）</option>
-      <option>Claude・AI（月額）</option>
-      <option>Wi-Fi・ネット代</option>
-      <option>スマホ代</option>
-      <option>Stripe手数料</option>
-      <option>振込手数料</option>
+    <select id="kotei-category" onchange="updateAnbunVisibility()">
+      <option data-anbun="no">Zoom（月額）</option>
+      <option data-anbun="no">Claude・AI（月額）</option>
+      <option data-anbun="yes">Wi-Fi・ネット代</option>
+      <option data-anbun="yes">スマホ代</option>
+      <option data-anbun="no">Stripe手数料</option>
+      <option data-anbun="no">振込手数料</option>
     </select>
-    <label>金額（円）</label>
-    <input type="number" id="kotei-amount" placeholder="例: 3000" inputmode="numeric">
+    <label>金額（円）<span id="kotei-amount-label"></span></label>
+    <input type="number" id="kotei-amount" placeholder="例: 3000" inputmode="numeric" oninput="updateAnbunCalc()">
+    <div id="anbun-area" style="display:none;">
+      <label>仕事で使う割合</label>
+      <select id="anbun-rate" onchange="updateAnbunCalc()">
+        <option value="50">50%</option>
+        <option value="60" selected>60%</option>
+        <option value="70">70%</option>
+      </select>
+      <p style="margin-top:10px; font-size:15px; color:#4527a0; font-weight:600;" id="anbun-calc">経費になる金額: 0円</p>
+    </div>
     <label>日付</label>
     <input type="date" id="kotei-date">
     <button class="save-btn" onclick="saveKotei()">保存</button>
@@ -283,10 +292,35 @@ function saveYabe() {
   showSuccess();
 }
 
+function isAnbun() {
+  const sel = document.getElementById('kotei-category');
+  return sel.options[sel.selectedIndex].getAttribute('data-anbun') === 'yes';
+}
+
+function updateAnbunVisibility() {
+  document.getElementById('anbun-area').style.display = isAnbun() ? 'block' : 'none';
+  document.getElementById('kotei-amount-label').textContent = isAnbun() ? '（満額を入力）' : '';
+  updateAnbunCalc();
+}
+
+function updateAnbunCalc() {
+  if (!isAnbun()) return;
+  const a = parseInt(document.getElementById('kotei-amount').value) || 0;
+  const r = parseInt(document.getElementById('anbun-rate').value);
+  document.getElementById('anbun-calc').textContent = '経費になる金額: ' + Math.round(a * r / 100).toLocaleString() + '円（' + r + '%）';
+}
+
 function saveKotei() {
   const a = parseInt(document.getElementById('kotei-amount').value);
   if (!a) { alert('金額を入力してください'); return; }
-  addEntry('expense', document.getElementById('kotei-date').value || today(), a, '通信費・手数料', document.getElementById('kotei-category').value);
+  let amount = a;
+  let note = document.getElementById('kotei-category').value;
+  if (isAnbun()) {
+    const r = parseInt(document.getElementById('anbun-rate').value);
+    amount = Math.round(a * r / 100);
+    note += '（満額' + a.toLocaleString() + '円の' + r + '%）';
+  }
+  addEntry('expense', document.getElementById('kotei-date').value || today(), amount, '通信費・手数料', note);
   document.getElementById('kotei-amount').value = '';
   document.getElementById('form-kotei').classList.remove('show');
   showSuccess();
